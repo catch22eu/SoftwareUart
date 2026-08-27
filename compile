@@ -1,0 +1,34 @@
+#!/bin/bash
+DEVICE=attiny85
+CLOCK=8000000
+PROGRAMMER=buspirate
+PORT=/dev/ttyUSB0
+BAUD=115200
+GCC_OPS="-Wall -Os -DF_CPU=$CLOCK -mmcu=$DEVICE"
+
+#show commands issued
+set -x
+
+#halt on error
+set -e
+
+#compile all .c files in .o files
+avr-gcc $GCC_OPS -c *.cpp
+
+#link all .o files into main.elf
+avr-gcc $GCC_OPS *.o -o main.elf
+
+#show the size of main.elf
+avr-size --format=avr --mcu=$DEVICE main.elf
+
+#translate main.elf to main.hex in ihex object format
+avr-objcopy -j .text -j .data -O ihex main.elf main.hex
+
+#upload 
+avrdude -v -p $DEVICE -c $PROGRAMMER -P $PORT -b $BAUD -U flash:w:main.hex:i
+
+#clean 
+rm -f *.o
+rm -f main.elf
+rm -f main.hex
+
