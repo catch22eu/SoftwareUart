@@ -1,7 +1,6 @@
-/* This file has been prepared for Doxygen automatic documentation generation.*/
-/*! \file *********************************************************************
+/* *********************************************************************
  *
- * \brief This file shows how to implement a half duplex software driven uart.
+ * This file shows how to implement a half duplex software driven uart.
  *
  * This single file shows how to implement a software uart using
  * Timer0 and external interrupt 0.
@@ -13,24 +12,16 @@
  * If other operating voltages and/or temperatures than 5 Volts and 25 Degrees Celsius
  * are desired, consider calibrating the internal oscillator.
  *
- * \par Application note:
- *      AVR304: Half Duplex Interrupt Driven Software UART
- *
- * \par Documentation
- *      For comprehensive code documentation, supported compilers, compiler
- *      settings and supported devices see readme.html
- *
- * \author
- *      Atmel Corporation: http://www.atmel.com \n
- *      Support email: avr@atmel.com
- *
- * $Name$
- * $Revision: 3778 $
- * $RCSfile$
- * $Date: 2008-04-11 15:05:31 +0200 (fr, 11 apr 2008) $  \n
+ * original author
+ *      Atmel Corporation: http://www.atmel.com
+ *      Revision: 3778
+ *      Date: 2008-04-11
+ * updated by Joseph Heller / CATCH22eu @ Github
+ *      MIT License
+ *      Date: 2026-08-27
  ******************************************************************************/
-#include <ioavr.h>     // Device specifics.
-#include <inavr.h>     // The __enable_interrupt() intrinsic.
+#include <avr/io.h>      // Device specifics
+#include <avr/interrupt.h>  // The __enable_interrupt() intrinsic.
 
 
 #define BR_9600     //!< Desired baudrate...choose one, comment the others.
@@ -58,7 +49,7 @@
 
 //Some IO, timer and interrupt specific defines.
 
-#if  (defined(__ATmega16__) || defined(__ATmega32__))
+#if  (defined(__AVR_ATmega16__) || defined(__AVR_ATmega32__))
   #define ENABLE_TIMER_INTERRUPT( )       ( TIMSK |= ( 1<< OCIE0 ) )
   #define DISABLE_TIMER_INTERRUPT( )      ( TIMSK &= ~( 1<< OCIE0 ) )
   #define CLEAR_TIMER_INTERRUPT( )        ( TIFR |= ((1 << OCF0) ) )
@@ -72,8 +63,11 @@
   #define EXT_IFR          GIFR              //!< External Interrupt Flag Register
   #define EXT_ICR          MCUCR             //!< External Interrupt Control Register
   #define TIMER_COMP_VECT  TIMER0_COMP_vect  //!< Timer Compare Interrupt Vector
-
-#elif defined(__ATmega128__)
+  #define TRXDDR  DDRD
+  #define TRXPORT PORTD
+  #define TRXPIN  PIND  
+  
+#elif defined(__AVR_ATmega128__)
   #define ENABLE_TIMER_INTERRUPT( )       ( TIMSK |= ( 1<< OCIE0 ) )
   #define DISABLE_TIMER_INTERRUPT( )      ( TIMSK &= ~( 1<< OCIE0 ) )
   #define CLEAR_TIMER_INTERRUPT( )        ( TIFR |= ((1 << OCF0) ) )
@@ -87,8 +81,11 @@
   #define EXT_IFR          EIFR              //!< External Interrupt Flag Register
   #define EXT_ICR          EICRA             //!< External Interrupt Control Register
   #define TIMER_COMP_VECT  TIMER0_COMP_vect  //!< Timer Compare Interrupt Vector
-
-#elif defined(__ATmega169__)
+  #define TRXDDR  DDRD
+  #define TRXPORT PORTD
+  #define TRXPIN  PIND  
+  
+#elif defined(__AVR_ATmega169__)
   #define ENABLE_TIMER_INTERRUPT( )       ( TIMSK0 |= ( 1<< OCIE0A ) )
   #define DISABLE_TIMER_INTERRUPT( )      ( TIMSK0 &= ~( 1<< OCIE0A ) )
   #define CLEAR_TIMER_INTERRUPT( )        ( TIFR0 |= ((1 << OCF0A) ) )
@@ -102,8 +99,11 @@
   #define EXT_IFR          EIFR              //!< External Interrupt Flag Register
   #define EXT_ICR          EICRA             //!< External Interrupt Control Register
   #define TIMER_COMP_VECT  TIMER0_COMP_vect  //!< Timer Compare Interrupt Vector
-
-#elif (defined(__ATmega48__) || defined(__ATmega88__))
+  #define TRXDDR  DDRD
+  #define TRXPORT PORTD
+  #define TRXPIN  PIND  
+  
+#elif (defined(__AVR_ATmega48__) || defined(__AVR_ATmega88__))
   #define ENABLE_TIMER_INTERRUPT( )       ( TIMSK0 |= ( 1<< OCIE0A ) )
   #define DISABLE_TIMER_INTERRUPT( )      ( TIMSK0 &= ~( 1<< OCIE0A ) )
   #define CLEAR_TIMER_INTERRUPT( )        ( TIFR0 |= ((1 << OCF0A) ) )
@@ -117,15 +117,31 @@
   #define EXT_IFR          EIFR               //!< External Interrupt Flag Register
   #define EXT_ICR          EICRA              //!< External Interrupt Control Register
   #define TIMER_COMP_VECT  TIMER0_COMPA_vect  //!< Timer Compare Interrupt Vector
-
+  #define TRXDDR  DDRD
+  #define TRXPORT PORTD
+  #define TRXPIN  PIND  
+  
+#elif (defined(__AVR_ATtiny85__) || defined(__AVR_ATtiny45__))
+  #define ENABLE_TIMER_INTERRUPT( )       ( TIMSK |= ( 1<< OCIE0A ) )
+  #define DISABLE_TIMER_INTERRUPT( )      ( TIMSK &= ~( 1<< OCIE0A ) )
+  #define CLEAR_TIMER_INTERRUPT( )        ( TIFR  |= ((1 << OCF0A) ) )
+  #define ENABLE_EXTERNAL0_INTERRUPT( )   ( GIMSK |= ( 1<< INT0 ) )
+  #define DISABLE_EXTERNAL0_INTERRUPT( )  ( GIMSK &= ~( 1<< INT0 ) )
+  #define TX_PIN           PB3                //!< Transmit data pin
+  #define RX_PIN           PB2                //!< Receive data pin, must be INT0 (only PB2)
+  #define TCCR             TCCR0A             //!< Timer/Counter Control Register
+  #define TCCR_P           TCCR0B             //!< Timer/Counter Control (Prescaler) Register
+  #define OCR              OCR0A              //!< Output Compare Register
+  #define EXT_IFR          GIFR               //!< External Interrupt Flag Register
+  #define EXT_ICR          MCUCR              //!< External Interrupt Control Register
+  #define TIMER_COMP_VECT  TIMER0_COMPA_vect  //!< Timer Compare Interrupt Vector
+  #define TRXDDR  DDRB
+  #define TRXPORT PORTB
+  #define TRXPIN  PINB
+  
 #else
   #warning Selected AVR device is not supported
 #endif
-
-
-#define TRXDDR  DDRD
-#define TRXPORT PORTD
-#define TRXPIN  PIND
 
 #define SET_TX_PIN( )    ( TRXPORT |= ( 1 << TX_PIN ) )
 #define CLEAR_TX_PIN( )  ( TRXPORT &= ~( 1 << TX_PIN ) )
@@ -163,8 +179,7 @@ static volatile unsigned char SwUartRXBitCount; //!< RX bit counter.
  *
  *  \note  initSoftwareUart( void ) must be called in advance.
  */
-#pragma vector=INT0_vect
-__interrupt void Extern0_interrupt( void )
+ISR(INT0_vect)
 {
 
   state = RECEIVE;                  // Change state
@@ -198,8 +213,7 @@ __interrupt void Extern0_interrupt( void )
  *
  *  \note  initSoftwareUart( void ) must be called in advance.
  */
-  #pragma vector=TIMER_COMP_VECT
-__interrupt void Timer0_CompareA_interrupt( void )
+ISR(TIMER_COMP_VECT)
 {
 
   switch (state) {
@@ -353,10 +367,11 @@ void print_string( const unsigned char *data )
  *
  *  \retval void
  */
-__C_task void main( void )
+
+int main( )
 {
   initSoftwareUart( );
-  __enable_interrupt( );
+  sei( );
 
   for( ; ; )
   {

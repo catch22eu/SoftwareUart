@@ -13,7 +13,7 @@ set -x
 set -e
 
 #compile all .c files in .o files
-avr-gcc $GCC_OPS -c *.cpp
+avr-gcc $GCC_OPS -c *.c
 
 #link all .o files into main.elf
 avr-gcc $GCC_OPS *.o -o main.elf

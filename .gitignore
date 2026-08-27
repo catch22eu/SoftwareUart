@@ -4,5 +4,8 @@
 *.obj
 *.elf
 
+# Documentation
+*.pdf
+
 # Directories
 /avr304/
