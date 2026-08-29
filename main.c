@@ -148,7 +148,7 @@
 #define GET_RX_PIN( )    ( TRXPIN & ( 1 << RX_PIN ) )
 
 
-/*! \brief  Type defined enumeration holding software UART's state.
+/* Type defined enumeration holding software UART's state.
  *
  */
 typedef enum
@@ -168,7 +168,7 @@ static volatile unsigned char SwUartRXData;     //!< Storage for received bits.
 static volatile unsigned char SwUartRXBitCount; //!< RX bit counter.
 
 
-/*! \brief  External interrupt service routine.
+/*  External interrupt service routine.
  *
  *  The falling edge in the beginning of the start
  *  bit will trig this interrupt. The state will
@@ -177,7 +177,7 @@ static volatile unsigned char SwUartRXBitCount; //!< RX bit counter.
  *  from the falling edge. At that instant the
  *  code should sample the first data bit.
  *
- *  \note  initSoftwareUart( void ) must be called in advance.
+ *  Note: initSoftwareUart( void ) must be called in advance.
  */
 ISR(INT0_vect)
 {
@@ -201,7 +201,7 @@ ISR(INT0_vect)
 }
 
 
-/*! \brief  Timer0 interrupt service routine.
+/* Timer0 interrupt service routine.
  *
  *  Timer0 will ensure that bits are written and
  *  read at the correct instants in time.
@@ -211,7 +211,7 @@ ISR(INT0_vect)
  *  variable is set to IDLE. IDLE is regarded
  *  as a safe state/mode.
  *
- *  \note  initSoftwareUart( void ) must be called in advance.
+ *  Note: initSoftwareUart( void ) must be called in advance.
  */
 ISR(TIMER_COMP_VECT)
 {
@@ -273,28 +273,24 @@ ISR(TIMER_COMP_VECT)
 }
 
 
-/*! \brief  Function to initialize the software UART.
+/*  Function to initialize the software UART.
  *
  *  This function will set up pins to transmit and
  *  receive on. Control of Timer0 and External interrupt 0.
- *
- *  \param  void
- *
- *  \retval void
  */
 static void initSoftwareUart( void )
 {
   //PORT
   TRXPORT |= ( 1 << RX_PIN );       // RX_PIN is input, tri-stated.
   TRXDDR |= ( 1 << TX_PIN );        // TX_PIN is output.
-  SET_TX_PIN( );                    // Set the TX line to idle state.
+  SET_TX_PIN( );                    // Set the TX line to idle state (high).
 
   // Timer0
   DISABLE_TIMER_INTERRUPT( );
-  TCCR = 0x00;    //Init.
-  TCCR_P = 0x00;    //Init.
-  TCCR |= (1 << WGM01);			// Timer in CTC mode.
-  TCCR_P |=  ( 1 << CS01 );        // Divide by 8 prescaler.
+  TCCR = 0x00;                      // Init.
+  TCCR_P = 0x00;                    // Init.
+  TCCR |= (1 << WGM01);			    // Timer in CTC mode (Clear Timer on Compare Match).
+  TCCR_P |=  ( 1 << CS01 );         // Divide by 8 prescaler (assumes MCU is on assume 8Mhz).
 
   //External interrupt
   EXT_ICR = 0x00;                   // Init.
@@ -306,16 +302,12 @@ static void initSoftwareUart( void )
 }
 
 
-/*! \brief  Send a unsigned char.
+/*  Send a unsigned char.
  *
  *  This function sends a unsigned char on the TX_PIN
  *  using the timer0 isr.
  *
- *  \note  initSoftwareUart( void ) must be called in advance.
- *
- *  \param  c    unsigned char to transmit.
- *
- *  \retval void
+ *  Note: initSoftwareUart( void ) must be called in advance.
  */
 void putChar( const unsigned char c )
 {
@@ -333,19 +325,14 @@ void putChar( const unsigned char c )
   TCNT0 = 0;                        // Clear counter register.
   TCCR_P |= ( 1 << CS01 );          // CTC mode. Start prescaler clock.
 
-  CLEAR_TX_PIN();               // Clear TX line...start of preamble.
-
-  CLEAR_TX_PIN( );                   // Clear TX line...start of preamble
+  CLEAR_TX_PIN( );                   // Put TX line low: start bit
 
   ENABLE_TIMER_INTERRUPT( );        // Enable interrupt
 }
 
 
-/*! \brief  Print unsigned char string.
+/*  Print unsigned char string.
  *
- *  \param  const unsigned char*    Pointer to the string that is to be printed.
- *
- *  \retval void
  */
 void print_string( const unsigned char *data )
 {
@@ -356,17 +343,14 @@ void print_string( const unsigned char *data )
 }
 
 
-/*! \brief  Main loop.
+/*  Main loop.
  *
  *  This loop will run forever.
  *
- *  \note  This main method will write back a predefined string depending upon the character received from the user.
- *  \note  Only send one character at the time, or the loop will hang. To enable receiving of multiple chars look at
+ *  Note: This main method will write back a predefined string depending upon the character received from the user.
+ *        Only send one character at the time, or the loop will hang. To enable receiving of multiple chars look at
            AVR306: Using the AVR UART. This application note describes a buffered solution.
- *  \param  void
- *
- *  \retval void
- */
+  */
 
 int main( )
 {

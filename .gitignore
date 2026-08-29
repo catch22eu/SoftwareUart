@@ -6,6 +6,7 @@
 
 # Documentation
 *.pdf
+*.txt
 
 # Directories
 /avr304/
