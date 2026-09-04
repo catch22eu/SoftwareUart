@@ -171,7 +171,11 @@ void putChar( const unsigned char c )
     TCNT0 = 0;                        // Clear counter register.
     TCCR_P |= ( 1 << CS01 );          // CTC mode. Start prescaler clock.
 
+    OCR = TICKS2WAITONE;// Count one period into the future. Set before setting the TX pin to be a bit ahead. 
+
     CLEAR_TX_PIN( );                   // Put TX line low: start bit
+
+    CLEAR_TIMER_INTERRUPT( );         // Clear interrupt bits
 
     ENABLE_TIMER_INTERRUPT( );        // Enable interrupt
 }
