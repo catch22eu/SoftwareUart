@@ -18,6 +18,8 @@ The added ATtiny Devices:
 - ATtiny85, ATtiny45
 - Attiny25 should work as well. 
 
+For all devices, the code assumes 8MHz internal clock. For ATTiny at least, this means that the factory default setting of 1MHz using the 1/8th prescaler needs to be re-programmed in the low fuse byte, or in code. 
+
 ## Compiling 
 The code is now compatible with avr-gcc compiler and the associated libraries. 
 For convenience a compiler script is added which assumes a buspirate programmer 
